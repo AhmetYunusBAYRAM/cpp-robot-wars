@@ -2,7 +2,6 @@
 #include <iostream>
 #include <cstdlib>
 
-// Player
 Player::Player(Point p, int index) : Movable(p, 0, "P" + std::to_string(index)) {}
 Point Player::move() {
     std::cout << nickName << " için yön seçin (0:Kuzey, 1:Doğu, 2:Güney, 3:Batı): ";

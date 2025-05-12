@@ -5,7 +5,6 @@
 #include <vector>
 #include <memory>
 
-// Renk kodları
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
 #define GREEN   "\033[32m"
@@ -96,12 +95,11 @@ void Arena::drawTerrain() {
                     break;
                 }
             }
-            if (!yazildi) std::cout << "  "; // Her hücre iki karakter
+            if (!yazildi) std::cout << "  "; 
         }
-        std::cout << " ." << "\n"; // Sağ kenar
+        std::cout << " ." << "\n"; 
     }
 
-    // Alt kenar (boşluksuz, sadece noktalar)
     for (int x = 0; x < width + 2; x++) {
         if (x == 0) 
             std::cout << ".";

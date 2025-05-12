@@ -3,11 +3,9 @@
 
 #include <string>
 
-// Arena boyutları
 const int ARENA_WIDTH = 20;
 const int ARENA_HEIGHT = 20;
 
-// Robot tipleri için enum
 enum RobotType {
     PLAYER,
     SHOOTER,
@@ -15,13 +13,11 @@ enum RobotType {
     JUMPER
 };
 
-// Robot durumları için enum
 enum RobotStatus {
     ALIVE,
     DEAD
 };
 
-// Hareket yönleri için enum
 enum Direction {
     NORTH = 0,
     NORTHEAST = 1,
@@ -33,7 +29,6 @@ enum Direction {
     NORTHWEST = 7
 };
 
-// Yön isimleri
 const std::string DIRECTION_NAMES[] = {
     "KUZEY",
     "KUZEYDOĞU",
