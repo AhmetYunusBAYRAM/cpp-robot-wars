@@ -1,1 +1,0 @@
-/usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/RobotWars.dir/src/main.cpp.o CMakeFiles/RobotWars.dir/src/Point.cpp.o CMakeFiles/RobotWars.dir/src/Movable.cpp.o CMakeFiles/RobotWars.dir/src/Robot.cpp.o CMakeFiles/RobotWars.dir/src/Arena.cpp.o -o RobotWars
