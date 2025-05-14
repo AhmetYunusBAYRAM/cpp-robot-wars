@@ -40,7 +40,11 @@ class Arena {
     }
 
     public:
-    Arena(int w, int h) : width(w), height(h) {}
+    Arena(int arenaWidth, int arenaHeight) {
+        width = arenaWidth;
+        height = arenaHeight;
+    }
+
     
     void initialize() {
     int np, ns, nf, nj;
@@ -94,6 +98,7 @@ class Arena {
         );
     }
 }
+
 void runGame() {
     bool gameOver = false;
     while (!gameOver) {
@@ -187,6 +192,7 @@ void showScoreTable() {
         std::cout << nickname << " = " << totalPoints << "   " << status << std::endl;
     }
 }
+
 int checkCollision(int idx) {
     // Tüm robotlar arasında çarpışma kontrolü yapılır
     for (int i = 0; i < robots.size(); i++) {

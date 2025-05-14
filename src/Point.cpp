@@ -7,7 +7,11 @@ class Point {
 private:
     int x, y;
 public:
-    Point(int x = 0, int y = 0) : x(x), y(y) {}
+
+   Point(int xVal = 0, int yVal = 0) {
+    x = xVal;
+    y = yVal;
+    }
 
     // Getter fonksiyonlarımız
     int getX() const { 
