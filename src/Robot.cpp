@@ -1,20 +1,21 @@
 #ifndef ROBOT_CPP
 #define ROBOT_CPP
 
-#include <iostream>
-#include <cstdlib>
-#include <random>
-#include <cmath>
-#include <string>
 #include "Movable.cpp"
 #include "../include/config.h"
 
+// Standart C++ kütüphaneleri
+#include <iostream>   // Giriş/çıkış işlemleri için
+#include <cstdlib>    // rand() fonksiyonu için
+#include <string>     // String işlemleri için
+
+
 class Player : public Movable {
 public:
-    Player(Point p, int index) : Movable(p, 1, "Oyuncu" + std::to_string(index)) {}
+    Player(Point p, int index) : Movable(p, 1, "P" + std::to_string(index)) {}
     
     Point move() override {
-        std::cout << nickName << " için yön seçin (0:Kuzey, 1:Doğu, 2:Güney, 3:Batı): ";
+        std::cout << "Player" << std::to_string(type) << " için yön seçin (0:Kuzey, 1:Doğu, 2:Güney, 3:Batı): ";
         int dir; std::cin >> dir;
         Point newLoc = location;
         switch(dir) {
@@ -30,7 +31,7 @@ public:
 
 class Shooter : public Movable {
 public:
-    Shooter(Point p, int index) : Movable(p, 2, "Nişancı" + std::to_string(index)) {}
+    Shooter(Point p, int index) : Movable(p, 2, "S" + std::to_string(index)) {}
     
     Point move() override {
         return Point(location.getX() + 1, location.getY() - 1);
@@ -39,7 +40,7 @@ public:
 
 class Freezer : public Movable {
 public:
-    Freezer(Point p, int index) : Movable(p, 3, "Dondurucu" + std::to_string(index)) {}
+    Freezer(Point p, int index) : Movable(p, 3, "F" + std::to_string(index)) {}
     
     Point move() override {
         int dx[] = {0, 1, 0, -1};
@@ -51,7 +52,7 @@ public:
 
 class Jumper : public Movable {
 public:
-    Jumper(Point p, int index) : Movable(p, 4, "Zıplayan" + std::to_string(index)) {}
+    Jumper(Point p, int index) : Movable(p, 4, "J" + std::to_string(index)) {}
     
     Point move() override {
         return Point(rand() % ARENA_WIDTH, rand() % ARENA_HEIGHT);

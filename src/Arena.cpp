@@ -10,12 +10,12 @@
 #include <vector>
 #include <memory>
 
+// ANSI renk kodları
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
 #define GREEN   "\033[32m"
 #define YELLOW  "\033[33m"
 #define CYAN    "\033[36m"
-
 
 class Arena {
     private : 
@@ -24,34 +24,20 @@ class Arena {
 
     // Verilen sembol karakterine göre renklendirilmiş bir string döner
     std::string getColoredSymbol(const std::string& symbol) {
-    // Eğer sembol boşsa, renklendirme yapılmadan doğrudan geri döndürülür
-    if (symbol.empty()) {
-        return symbol;
-    }
+        // Eğer sembol boşsa, renklendirme yapılmadan doğrudan geri döndürülür
+        if (symbol.empty()) {
+            return symbol;
+        }
 
-    // Sembol 'P' harfiyle başlıyorsa yeşil renkte döndür
-    if (symbol[0] == 'P') {
-        return std::string(GREEN) + symbol + RESET;
+        // Robot tipine göre renklendirme
+        switch(symbol[0]) {
+            case 'P': return std::string(GREEN) + symbol + RESET;  // Oyuncu - Yeşil
+            case 'S': return std::string(RED) + symbol + RESET;    // Nişancı - Kırmızı
+            case 'F': return std::string(CYAN) + symbol + RESET;   // Dondurucu - Camgöbeği
+            case 'J': return std::string(YELLOW) + symbol + RESET; // Zıplayan - Sarı
+            default: return symbol;
+        }
     }
-
-    // Sembol 'S' harfiyle başlıyorsa kırmızı renkte döndür
-    if (symbol[0] == 'S') {
-        return std::string(RED) + symbol + RESET;
-    }
-
-    // Sembol 'F' harfiyle başlıyorsa camgöbeği renkte döndür
-    if (symbol[0] == 'F') {
-        return std::string(CYAN) + symbol + RESET;
-    }
-
-    // Sembol 'J' harfiyle başlıyorsa sarı renkte döndür
-    if (symbol[0] == 'J') {
-        return std::string(YELLOW) + symbol + RESET;
-    }
-
-    // Yukarıdaki koşullardan hiçbiri sağlanmazsa sembol renklendirilmeden döndürülür
-    return symbol;
-}
 
     public:
     Arena(int w, int h) : width(w), height(h) {}
@@ -140,49 +126,27 @@ void runGame() {
 void drawTerrain() {
     system("clear");
 
-    // Üst kenar (boşluksuz, sadece noktalar)
+    // Üst kenar
     for (int x = 0; x < width + 2; x++) {
         if (x == 0) 
             std::cout << ".";
         else 
             std::cout << " .";
     }
-
     std::cout << "\n";
 
+    // Oyun alanı
     for (int y = 0; y < height; y++) {
         std::cout << ".";
         for (int x = 0; x < width; x++) {
             bool yazildi = false;
             for (auto& r : robots) {
-                // Canlılık durumu kontrolü (sadece yaşayanlar işlenir)
-                bool isAlive = (r->getStatus() == Movable::Status::ALIVE);
-                
-                // Konumun X koordinatı doğru mu?
-                bool isAtX = (r->getLocation().getX() == x);
-
-                // Konumun Y koordinatı doğru mu?
-                bool isAtY = (r->getLocation().getY() == y);
-
-                 // Tüm koşullar sağlanıyorsa işleme başla
-                if (isAlive && isAtX && isAtY) {
-                    // Robotun takma adını al
-                    std::string sym = r->getNickName();
+                if (r->getStatus() == Movable::Status::ALIVE && 
+                    r->getLocation().getX() == x && 
+                    r->getLocation().getY() == y) {
                     
-                    // Takma adı 2 karaktere göre biçimlendir
-                    if (sym.length() < 2) {
-                        // Eğer 1 karakterse, sonuna 0 ekle (örnek: "P" → "P0")
-                        sym += "0";
-                    }
-                    else if (sym.length() > 2) {
-                        // Eğer 2 karakterden uzunsa, sadece ilk 2 karakteri kullan
-                        sym = sym.substr(0, 2);
-                    }
-                
-                    // Renkli olarak sembolü ekrana yazdır
+                    std::string sym = r->getNickName();
                     std::cout << getColoredSymbol(sym);
-                
-                    // Yazıldığı bilgisini tut ve döngüyü sonlandır
                     yazildi = true;
                     break;
                 }
@@ -190,18 +154,16 @@ void drawTerrain() {
             if (!yazildi) {
                 std::cout << "  "; 
             }
-        
         }
         std::cout << " ." << "\n"; 
     }
 
+    // Alt kenar
     for (int x = 0; x < width + 2; x++) {
-        if (x == 0){
-             std::cout << ".";
-        }
-        else {
+        if (x == 0)
+            std::cout << ".";
+        else
             std::cout << " .";
-        }
     }
     std::cout << "\n";
 }
