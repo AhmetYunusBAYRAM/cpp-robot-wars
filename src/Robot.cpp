@@ -10,7 +10,7 @@
 
 class Player : public Movable {
 public:
-    Player(Point p, int index) : Movable(p, 1, "Player" + std::to_string(index)) {}
+    Player(Point p, int index) : Movable(p, 1, "Oyuncu" + std::to_string(index)) {}
     
     Point move() override {
         std::cout << nickName << " için yön seçin (0:Kuzey, 1:Doğu, 2:Güney, 3:Batı): ";
@@ -29,7 +29,7 @@ public:
 
 class Shooter : public Movable {
 public:
-    Shooter(Point p, int index) : Movable(p, 2, "Shooter" + std::to_string(index)) {}
+    Shooter(Point p, int index) : Movable(p, 2, "Nişancı" + std::to_string(index)) {}
     
     Point move() override {
         return Point(location.getX() + 1, location.getY() - 1);
@@ -38,7 +38,7 @@ public:
 
 class Freezer : public Movable {
 public:
-    Freezer(Point p, int index) : Movable(p, 3, "Freezer" + std::to_string(index)) {}
+    Freezer(Point p, int index) : Movable(p, 3, "Dondurucu" + std::to_string(index)) {}
     
     Point move() override {
         int dx[] = {0, 1, 0, -1};
@@ -50,7 +50,7 @@ public:
 
 class Jumper : public Movable {
 public:
-    Jumper(Point p, int index) : Movable(p, 4, "Jumper" + std::to_string(index)) {}
+    Jumper(Point p, int index) : Movable(p, 4, "Zıplayan" + std::to_string(index)) {}
     
     Point move() override {
         return Point(rand() % 20, rand() % 10);
