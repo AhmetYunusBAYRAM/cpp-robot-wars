@@ -15,6 +15,7 @@ public:
     std::string nickName;
     int totalPoints;
     
+    // Constructor yani yapıcı fonksiyonlarımız
     Movable() : status(ALIVE), type(0), totalPoints(0) {}
     Movable(Point p, int type, std::string nick) 
         : location(p), status(ALIVE), type(type), nickName(nick), totalPoints(0) {}
@@ -54,7 +55,7 @@ public:
     void subPoints(int p) {
          totalPoints -= p; 
     }
-    
+
     virtual Point move() = 0;
 };
 
