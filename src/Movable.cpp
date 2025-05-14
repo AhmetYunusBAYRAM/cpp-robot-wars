@@ -1,15 +1,34 @@
-#include "../include/Movable.h"
+#ifndef MOVABLE_CPP
+#define MOVABLE_CPP
 
-Movable::Movable() : location(0,0), status(ALIVE), type(0), nickName(""), totalPoints(0) {}
-Movable::Movable(Point p, int type, std::string nick)
-    : location(p), status(ALIVE), type(type), nickName(nick), totalPoints(0) {}
+#include <iostream>
+#include <string>
+#include "Point.cpp"
 
-void Movable::setLocation(Point p) { location = p; }
-Point Movable::getLocation() const { return location; }
-Status Movable::getStatus() const { return status; }
-void Movable::setStatus(Status s) { status = s; }
-std::string Movable::getNickName() const { return nickName; }
-int Movable::getType() const { return type; }
-int Movable::getTotalPoints() const { return totalPoints; }
-void Movable::addPoints(int p) { totalPoints += p; }
-void Movable::subPoints(int p) { totalPoints -= p; }
+class Movable {
+public:
+    enum Status { ALIVE, DEAD };
+    
+    Point location;
+    Status status;
+    int type;
+    std::string nickName;
+    int totalPoints;
+    
+    Movable() : status(ALIVE), type(0), totalPoints(0) {}
+    Movable(Point p, int type, std::string nick) 
+        : location(p), status(ALIVE), type(type), nickName(nick), totalPoints(0) {}
+    
+    void setLocation(Point p) { location = p; }
+    Point getLocation() const { return location; }
+    Status getStatus() const { return status; }
+    void setStatus(Status s) { status = s; }
+    std::string getNickName() const { return nickName; }
+    int getType() const { return type; }
+    int getTotalPoints() const { return totalPoints; }
+    void addPoints(int p) { totalPoints += p; }
+    void subPoints(int p) { totalPoints -= p; }
+    virtual Point move() = 0;
+};
+
+#endif

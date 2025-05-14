@@ -1,10 +1,20 @@
-#include "../include/Point.h"
+#ifndef POINT_CPP
+#define POINT_CPP
 
-Point::Point(int x, int y) : x(x), y(y) {}
-int Point::getX() const { return x; }
-int Point::getY() const { return y; }
-void Point::setX(int x) { this->x = x; }
-void Point::setY(int y) { this->y = y; }
-bool Point::operator==(const Point& other) const {
-    return x == other.x && y == other.y;
-}
+#include <iostream>
+
+class Point {
+private:
+    int x, y;
+public:
+    Point(int x = 0, int y = 0) : x(x), y(y) {}
+    int getX() const { return x; }
+    int getY() const { return y; }
+    void setX(int x) { this->x = x; }
+    void setY(int y) { this->y = y; }
+    bool operator==(const Point& other) const {
+        return x == other.x && y == other.y;
+    }
+};
+
+#endif

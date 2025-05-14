@@ -1,4 +1,9 @@
-#include "../include/Arena.h"
+#ifndef ARENA_CPP
+#define ARENA_CPP
+
+#include "Robot.cpp"
+#include "Movable.cpp"
+
 #include <iostream>
 #include <thread>
 #include <chrono>
@@ -11,36 +16,106 @@
 #define YELLOW  "\033[33m"
 #define CYAN    "\033[36m"
 
-std::string getColoredSymbol(const std::string& symbol) {
-    if (symbol[0] == 'P') return std::string(GREEN) + symbol + RESET;
-    if (symbol[0] == 'S') return std::string(RED) + symbol + RESET;
-    if (symbol[0] == 'F') return std::string(CYAN) + symbol + RESET;
-    if (symbol[0] == 'J') return std::string(YELLOW) + symbol + RESET;
+
+class Arena {
+    private : 
+    std::vector<std::shared_ptr<Movable>> robots;
+    int width, height;
+
+    // Verilen sembol karakterine göre renklendirilmiş bir string döner
+    std::string getColoredSymbol(const std::string& symbol) {
+    // Eğer sembol boşsa, renklendirme yapılmadan doğrudan geri döndürülür
+    if (symbol.empty()) {
+        return symbol;
+    }
+
+    // Sembol 'P' harfiyle başlıyorsa yeşil renkte döndür
+    if (symbol[0] == 'P') {
+        return std::string(GREEN) + symbol + RESET;
+    }
+
+    // Sembol 'S' harfiyle başlıyorsa kırmızı renkte döndür
+    if (symbol[0] == 'S') {
+        return std::string(RED) + symbol + RESET;
+    }
+
+    // Sembol 'F' harfiyle başlıyorsa camgöbeği renkte döndür
+    if (symbol[0] == 'F') {
+        return std::string(CYAN) + symbol + RESET;
+    }
+
+    // Sembol 'J' harfiyle başlıyorsa sarı renkte döndür
+    if (symbol[0] == 'J') {
+        return std::string(YELLOW) + symbol + RESET;
+    }
+
+    // Yukarıdaki koşullardan hiçbiri sağlanmazsa sembol renklendirilmeden döndürülür
     return symbol;
 }
 
-Arena::Arena(int w, int h) : width(w), height(h) {}
-
-void Arena::initialize() {
+    public:
+    Arena(int w, int h) : width(w), height(h) {}
+    
+    void initialize() {
     int np, ns, nf, nj;
-    std::cout << "Number of Players .....(1-9): "; std::cin >> np;
-    std::cout << "Number of Shooters ...(0-9): "; std::cin >> ns;
-    std::cout << "Number of Freezers ....(0-9): "; std::cin >> nf;
-    std::cout << "Number of Jumpers .....(0-9): "; std::cin >> nj;
-    for(int i=0;i<np;i++) robots.push_back(std::make_shared<Player>(Point(rand()%width,rand()%height),i));
-    for(int i=0;i<ns;i++) robots.push_back(std::make_shared<Shooter>(Point(rand()%width,rand()%height),i));
-    for(int i=0;i<nf;i++) robots.push_back(std::make_shared<Freezer>(Point(rand()%width,rand()%height),i));
-    for(int i=0;i<nj;i++) robots.push_back(std::make_shared<Jumper>(Point(rand()%width,rand()%height),i));
-}
 
-void Arena::runGame() {
+    // Kullanıcıdan robot türü sayıları alınır
+    std::cout << "Oyuncu sayısı ...........(1-9): ";
+    std::cin >> np;
+
+    std::cout << "Nişancı sayısı ..........(0-9): ";
+    std::cin >> ns;
+
+    std::cout << "Dondurucu sayısı ........(0-9): ";
+    std::cin >> nf;
+
+    std::cout << "Zıplayıcı sayısı ........(0-9): ";
+    std::cin >> nj;
+
+    // Oyuncuları oluştur ve listeye ekle
+    for (int i = 0; i < np; i++) {
+        robots.push_back(
+            std::make_shared<Player>(
+                Point(rand() % width, rand() % height), i
+            )
+        );
+    }
+
+    // Nişancıları oluştur ve listeye ekle
+    for (int i = 0; i < ns; i++) {
+        robots.push_back(
+            std::make_shared<Shooter>(
+                Point(rand() % width, rand() % height), i
+            )
+        );
+    }
+
+    // Dondurucuları oluştur ve listeye ekle
+    for (int i = 0; i < nf; i++) {
+        robots.push_back(
+            std::make_shared<Freezer>(
+                Point(rand() % width, rand() % height), i
+            )
+        );
+    }
+
+    // Zıplayıcıları oluştur ve listeye ekle
+    for (int i = 0; i < nj; i++) {
+        robots.push_back(
+            std::make_shared<Jumper>(
+                Point(rand() % width, rand() % height), i
+            )
+        );
+    }
+}
+void runGame() {
     bool gameOver = false;
     while (!gameOver) {
         drawTerrain();
         showScoreTable();
 
         for (int i = 0; i < robots.size(); i++) {
-            if (robots[i]->getStatus() == ALIVE) {
+            if (robots[i]->getStatus() == Movable::Status::ALIVE) {
                 Point newLoc = robots[i]->move();
                 // Sınırdan taşarsa diğer tarafa geçir
                 int nx = (newLoc.getX() + width) % width;
@@ -48,7 +123,7 @@ void Arena::runGame() {
                 robots[i]->setLocation(Point(nx, ny));
                 int collidedWith = checkCollision(i);
                 if (collidedWith > -1) {
-                    robots[collidedWith]->setStatus(DEAD);
+                    robots[collidedWith]->setStatus(Movable::Status::DEAD);
                     robots[collidedWith]->subPoints(1);
                     robots[i]->addPoints(2);
                 }
@@ -59,15 +134,11 @@ void Arena::runGame() {
     }
     drawTerrain();
     showScoreTable();
-    std::cout << "GAME IS OVER!\n";
+    std::cout << "OYUN BİTTİ!\n";
 }
 
-void Arena::drawTerrain() {
-    #ifdef _WIN32
-        system("cls");
-    #else
-        system("clear");
-    #endif
+void drawTerrain() {
+    system("clear");
 
     // Üst kenar (boşluksuz, sadece noktalar)
     for (int x = 0; x < width + 2; x++) {
@@ -84,53 +155,112 @@ void Arena::drawTerrain() {
         for (int x = 0; x < width; x++) {
             bool yazildi = false;
             for (auto& r : robots) {
-                if (r->getStatus() == ALIVE &&
-                    r->getLocation().getX() == x &&
-                    r->getLocation().getY() == y) {
+                // Canlılık durumu kontrolü (sadece yaşayanlar işlenir)
+                bool isAlive = (r->getStatus() == Movable::Status::ALIVE);
+                
+                // Konumun X koordinatı doğru mu?
+                bool isAtX = (r->getLocation().getX() == x);
+
+                // Konumun Y koordinatı doğru mu?
+                bool isAtY = (r->getLocation().getY() == y);
+
+                 // Tüm koşullar sağlanıyorsa işleme başla
+                if (isAlive && isAtX && isAtY) {
+                    // Robotun takma adını al
                     std::string sym = r->getNickName();
-                    if (sym.length() < 2) sym += "0";
-                    else if (sym.length() > 2) sym = sym.substr(0, 2);
+                    
+                    // Takma adı 2 karaktere göre biçimlendir
+                    if (sym.length() < 2) {
+                        // Eğer 1 karakterse, sonuna 0 ekle (örnek: "P" → "P0")
+                        sym += "0";
+                    }
+                    else if (sym.length() > 2) {
+                        // Eğer 2 karakterden uzunsa, sadece ilk 2 karakteri kullan
+                        sym = sym.substr(0, 2);
+                    }
+                
+                    // Renkli olarak sembolü ekrana yazdır
                     std::cout << getColoredSymbol(sym);
+                
+                    // Yazıldığı bilgisini tut ve döngüyü sonlandır
                     yazildi = true;
                     break;
                 }
             }
-            if (!yazildi) std::cout << "  "; 
+            if (!yazildi) {
+                std::cout << "  "; 
+            }
+        
         }
         std::cout << " ." << "\n"; 
     }
 
     for (int x = 0; x < width + 2; x++) {
-        if (x == 0) 
-            std::cout << ".";
-        else 
+        if (x == 0){
+             std::cout << ".";
+        }
+        else {
             std::cout << " .";
+        }
     }
     std::cout << "\n";
 }
 
+void showScoreTable() {
+    // Başlık yazdırılır
+    std::cout << "Toplam Puan\n";
 
-
-void Arena::showScoreTable() {
-    std::cout << "Total Points\n";
+    // Tüm robotlar için skor ve durum bilgisi yazdırılır
     for (auto& r : robots) {
-        std::cout << r->getNickName() << " = " << r->getTotalPoints() << "   "
-                  << (r->getStatus() == ALIVE ? "ALIVE" : "DEAD") << std::endl;
+        // Robotun takma adı alınır
+        std::string nickname = r->getNickName();
+
+        // Robotun toplam puanı alınır
+        int totalPoints = r->getTotalPoints();
+
+        // Robotun durumu kontrol edilir
+        std::string status = (r->getStatus() == Movable::Status::ALIVE) ? "CANLI" : "ÖLÜ";
+
+        // Bilgiler ekrana yazdırılır
+        std::cout << nickname << " = " << totalPoints << "   " << status << std::endl;
     }
 }
-
-int Arena::checkCollision(int idx) {
+int checkCollision(int idx) {
+    // Tüm robotlar arasında çarpışma kontrolü yapılır
     for (int i = 0; i < robots.size(); i++) {
-        if (i != idx && robots[i]->getStatus() == ALIVE &&
-            robots[i]->getLocation() == robots[idx]->getLocation())
-            return i;
+        
+        // Kendi robotuyla çarpışma kontrolü yapılmaz
+        if (i != idx) {
+            
+            // Robotun durumu CANLI ve konumu aynıysa, çarpışma var demektir
+            if (robots[i]->getStatus() == Movable::Status::ALIVE && 
+                robots[i]->getLocation() == robots[idx]->getLocation()) {
+                
+                // Çarpışma tespit edildiyse, çarpışan robotun indeksini döndür
+                return i;
+            }
+        }
     }
+
+    // Çarpışma tespit edilmediyse -1 döndürülür
     return -1;
 }
-
-bool Arena::checkPlayerStatus() {
+bool checkPlayerStatus() {
+    // Canlı robot sayısını tutacak değişken
     int alive = 0;
-    for (auto& r : robots)
-        if (r->getStatus() == ALIVE) alive++;
+
+    // Tüm robotlar üzerinden geçilir
+    for (auto& r : robots) {
+        // Eğer robotun durumu ALIVE ise, canlı robot sayısı artırılır
+        if (r->getStatus() == Movable::Status::ALIVE) {
+            alive++;
+        }
+    }
+
+    // Eğer canlı robot sayısı 1 veya daha az ise, oyunun sonlanma durumu gerçekleşmiştir
     return alive <= 1;
 }
+
+};
+
+#endif
