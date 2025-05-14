@@ -7,6 +7,7 @@
 #include <cmath>
 #include <string>
 #include "Movable.cpp"
+#include "../include/config.h"
 
 class Player : public Movable {
 public:
@@ -53,7 +54,7 @@ public:
     Jumper(Point p, int index) : Movable(p, 4, "Zıplayan" + std::to_string(index)) {}
     
     Point move() override {
-        return Point(rand() % 20, rand() % 10);
+        return Point(rand() % ARENA_WIDTH, rand() % ARENA_HEIGHT);
     }
 };
 
