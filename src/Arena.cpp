@@ -94,13 +94,13 @@ class Arena {
 
     public:
     Arena(int arenaWidth, int arenaHeight) {
-        width = arenaWidth;
-        height = arenaHeight;
+        width = (arenaWidth < 10) ? 10 : arenaWidth;
+        height = (arenaHeight < 10) ? 10 : arenaHeight;
     }
 
     
     void initialize() {
-        system("clear");
+        system("cls");
         printHeader();
         int np, ns, nf, nj;
 
@@ -225,7 +225,7 @@ void printHeader() {
 }
 
 void drawTerrain() {
-    system("clear");
+    system("cls");
     printHeader();
     
     int screenWidth = getTerminalWidth();
@@ -319,7 +319,7 @@ void showTurnAnimation(int turn) {
     std::string mesaj = "Yeni Tur Başlıyor!";
     int screenWidth = getTerminalWidth();
     int padding = (screenWidth - mesaj.length()) / 2;
-    system("clear");
+    system("cls");
     for (int i = 0; i < padding; ++i) std::cout << " ";
     std::cout << YELLOW;
     for (char c : mesaj) {
@@ -328,7 +328,7 @@ void showTurnAnimation(int turn) {
     }
     std::cout << RESET << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(700));
-    system("clear");
+    system("cls");
 }
 
 int checkCollision(int idx) {
