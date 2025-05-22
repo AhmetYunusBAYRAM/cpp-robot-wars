@@ -23,6 +23,7 @@
 #define MAGENTA "\033[35m"
 #define BG_BLACK "\033[40m"
 #define BG_WHITE "\033[47m"
+#define ORANGE  "\033[38;5;208m"
 
 // Özel karakterler
 #define TOP_LEFT     "╔"
@@ -99,6 +100,8 @@ class Arena {
 
     
     void initialize() {
+        system("clear");
+        printHeader();
         int np, ns, nf, nj;
 
         // Kullanıcıdan robot türü sayıları alınır
@@ -160,8 +163,14 @@ class Arena {
     }
 
 void runGame() {
+    int turn = 1;
     bool gameOver = false;
+    bool firstTurn = true;
     while (!gameOver) {
+        if (firstTurn) {
+            showTurnAnimation(turn);
+            firstTurn = false;
+        }
         drawTerrain();
         std::cout << "\n\n";  // İki satır boşluk ekle
         showScoreTable();
@@ -183,6 +192,7 @@ void runGame() {
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         gameOver = checkPlayerStatus();
+        turn++;
     }
     drawTerrain();
     std::cout << "\n\n";  // İki satır boşluk ekle
@@ -199,52 +209,48 @@ void printHeader() {
     int rightPadding = (mapWidth - 2 - title.length()) - titlePadding;
 
     // Kutunun üst çizgisi
-    std::cout << std::string(boxPadding, ' ');
-    std::cout << BG_BLACK << "+" << std::string(mapWidth - 2, '-') << "+" << RESET << "\n";
+    std::string ust = std::string(boxPadding, ' ') + ORANGE + BG_BLACK + "+" + std::string(mapWidth - 2, '-') + "+" + RESET;
+    for (char c : ust) { std::cout << c << std::flush; std::this_thread::sleep_for(std::chrono::milliseconds(2)); }
+    std::cout << "\n";
 
     // Başlık satırı
-    std::cout << std::string(boxPadding, ' ');
-    std::cout << BG_BLACK << "|"
-              << std::string(titlePadding, ' ')
-              << title
-              << std::string(rightPadding, ' ')
-              << " |" << RESET << "\n";
+    std::string satir = std::string(boxPadding, ' ') + ORANGE + BG_BLACK + "|" + RESET + std::string(titlePadding, ' ') + title + std::string(rightPadding, ' ') + ORANGE + BG_BLACK + " |" + RESET;
+    for (char c : satir) { std::cout << c << std::flush; std::this_thread::sleep_for(std::chrono::milliseconds(2)); }
+    std::cout << "\n";
 
     // Kutunun alt çizgisi
-    std::cout << std::string(boxPadding, ' ');
-    std::cout << BG_BLACK << "+" << std::string(mapWidth - 2, '-') << "+" << RESET << "\n\n";
+    std::string alt = std::string(boxPadding, ' ') + ORANGE + BG_BLACK + "+" + std::string(mapWidth - 2, '-') + "+" + RESET;
+    for (char c : alt) { std::cout << c << std::flush; std::this_thread::sleep_for(std::chrono::milliseconds(2)); }
+    std::cout << "\n\n";
 }
 
 void drawTerrain() {
     system("clear");
     printHeader();
     
-    // Ekran genişliğini al
     int screenWidth = getTerminalWidth();
-    // Harita genişliği (kenarlar dahil)
-    int mapWidth = (width * 2) + 2;  // Her hücre 2 karakter genişliğinde
-    // Ortalama için gereken boşluk sayısı
+    int mapWidth = (width * 2) + 2;
     int padding = (screenWidth - mapWidth) / 2;
 
     // Üst kenar
     printSpaces(padding);
-    std::cout << BG_BLACK << TOP_LEFT;
+    std::cout << ORANGE << BG_BLACK << TOP_LEFT;
     for (int x = 0; x < width; x++) {
         std::cout << HORIZONTAL << HORIZONTAL;
     }
     std::cout << TOP_RIGHT << RESET << "\n";
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
     // Oyun alanı
     for (int y = 0; y < height; y++) {
         printSpaces(padding);
-        std::cout << BG_BLACK << VERTICAL;
+        std::cout << ORANGE << BG_BLACK << VERTICAL << RESET;
         for (int x = 0; x < width; x++) {
             bool yazildi = false;
             for (auto& r : robots) {
                 if (r->getStatus() == Movable::Status::ALIVE && 
                     r->getLocation().getX() == x && 
                     r->getLocation().getY() == y) {
-                    
                     std::string sym = r->getNickName();
                     std::cout << getColoredSymbol(sym);
                     yazildi = true;
@@ -255,27 +261,25 @@ void drawTerrain() {
                 std::cout << EMPTY_SPACE << " "; 
             }
         }
-        std::cout << VERTICAL << RESET << "\n"; 
+        std::cout << ORANGE << BG_BLACK << VERTICAL << RESET << "\n"; 
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
 
     // Alt kenar
     printSpaces(padding);
-    std::cout << BG_BLACK << BOTTOM_LEFT;
+    std::cout << ORANGE << BG_BLACK << BOTTOM_LEFT;
     for (int x = 0; x < width; x++) {
         std::cout << HORIZONTAL << HORIZONTAL;
     }
     std::cout << BOTTOM_RIGHT << RESET << "\n";
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
 }
 
 void showScoreTable() {
-    // Ekran genişliğini al
     int screenWidth = getTerminalWidth();
-    // Tablo genişliği (4 sütun * 20 karakter + 3 boşluk)
     int tableWidth = 83;
-    // Ortalama için gereken boşluk sayısı
     int padding = (screenWidth - tableWidth) / 2 + 2;
 
-    // Robotları türlerine göre grupla
     std::vector<std::shared_ptr<Movable>> players, shooters, freezers, jumpers;
     for (auto& r : robots) {
         switch(r->getNickName()[0]) {
@@ -286,21 +290,19 @@ void showScoreTable() {
         }
     }
 
-    // Başlıkları yazdır
     printSpaces(padding);
     std::cout << std::left 
               << std::setw(20) << (GREEN + std::string("      Oyuncular") + RESET)
               << std::setw(20) << (RED + std::string("          Nişancılar") + RESET)
               << std::setw(20) << (CYAN + std::string("        Dondurucular") + RESET)
               << std::setw(20) << (YELLOW + std::string("       Zıplayanlar") + RESET) << "\n";
-    
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
     printSpaces(padding);
-    std::cout << std::string(80, '-') << "\n";
+    std::cout << ORANGE << std::string(80, '-') << RESET << "\n";
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
 
-    // En uzun grup sayısını bul
     int maxSize = std::max({players.size(), shooters.size(), freezers.size(), jumpers.size()});
 
-    // Her satır için robotları yazdır
     for (int i = 0; i < maxSize; i++) {
         printSpaces(padding);
         printRobotInfo(i < players.size() ? players[i] : nullptr);
@@ -308,8 +310,25 @@ void showScoreTable() {
         printRobotInfo(i < freezers.size() ? freezers[i] : nullptr);
         printRobotInfo(i < jumpers.size() ? jumpers[i] : nullptr);
         std::cout << "\n";
+        std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }
     std::cout << "\n";
+}
+
+void showTurnAnimation(int turn) {
+    std::string mesaj = "Yeni Tur Başlıyor!";
+    int screenWidth = getTerminalWidth();
+    int padding = (screenWidth - mesaj.length()) / 2;
+    system("clear");
+    for (int i = 0; i < padding; ++i) std::cout << " ";
+    std::cout << YELLOW;
+    for (char c : mesaj) {
+        std::cout << c << std::flush;
+        std::this_thread::sleep_for(std::chrono::milliseconds(40));
+    }
+    std::cout << RESET << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(700));
+    system("clear");
 }
 
 int checkCollision(int idx) {
