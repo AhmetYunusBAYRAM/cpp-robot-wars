@@ -11,7 +11,10 @@ int main() {
     // Oyun alanını oluştur
     Arena arena(ARENA_WIDTH, ARENA_HEIGHT);
     
+    // Oyunu başlat
     arena.initialize();
+    
+    // Oyunu çalıştır
     arena.runGame();
     
     return 0;
