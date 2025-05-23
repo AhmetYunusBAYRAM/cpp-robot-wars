@@ -9,8 +9,7 @@
 #include <chrono>
 #include <vector>
 #include <memory>
-#include <sys/ioctl.h>
-#include <unistd.h>
+#include <windows.h>
 #include <iomanip>
 
 // ANSI renk kodları
@@ -41,9 +40,9 @@ class Arena {
 
     // Ekran genişliğini al
     int getTerminalWidth() {
-        struct winsize w;
-        ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-        return w.ws_col;
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+        GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+        return csbi.srWindow.Right - csbi.srWindow.Left + 1;
     }
 
     // Belirtilen sayıda boşluk yazdır
@@ -100,7 +99,7 @@ class Arena {
 
     
     void initialize() {
-        system("cls");
+        system("cls");  // Windows için clear komutu
         printHeader();
         int np, ns, nf, nj;
 
@@ -225,7 +224,7 @@ void printHeader() {
 }
 
 void drawTerrain() {
-    system("cls");
+    system("cls");  // Windows için clear komutu
     printHeader();
     
     int screenWidth = getTerminalWidth();
@@ -319,7 +318,7 @@ void showTurnAnimation(int turn) {
     std::string mesaj = "Yeni Tur Başlıyor!";
     int screenWidth = getTerminalWidth();
     int padding = (screenWidth - mesaj.length()) / 2;
-    system("cls");
+    system("cls");  // Windows için clear komutu
     for (int i = 0; i < padding; ++i) std::cout << " ";
     std::cout << YELLOW;
     for (char c : mesaj) {
@@ -328,7 +327,7 @@ void showTurnAnimation(int turn) {
     }
     std::cout << RESET << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(700));
-    system("cls");
+    system("cls");  // Windows için clear komutu
 }
 
 int checkCollision(int idx) {
