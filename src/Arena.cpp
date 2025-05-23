@@ -226,16 +226,22 @@ void runGame() {
 
 void printHeader() {
     int screenWidth = getTerminalWidth();
-    int mapWidth = (width * 2);
+    int mapWidth = (width * 2) + 2; // Arena genişliği + kenarlar
     std::string title = "ROBOT SAVASLARI";
     int boxPadding = (screenWidth - mapWidth) / 2;
-    int titlePadding = (mapWidth - 2 - title.length()) / 2;
-    int rightPadding = (mapWidth - 2 - title.length()) - titlePadding;
+
+    // Başlık metninin kutu içindeki toplam uzunluğu (padding dahil) - kenar karakterleri düşülmüş
+    int titleBoxContentWidth = mapWidth - 2; 
+    int titleLength = title.length();
+    int totalPaddingInsideBox = titleBoxContentWidth - titleLength;
+    // Boşlukları tam sayı yap
+    int leftPaddingInsideBox = totalPaddingInsideBox / 2;
+    int rightPaddingInsideBox = totalPaddingInsideBox - leftPaddingInsideBox;
 
     // Kutunun üst çizgisi
     printSpaces(boxPadding);
-    std::cout << ORANGE << BG_BLACK << TOP_LEFT;
-    for (int x = 0; x < mapWidth - 2; x++) {
+    std::cout << ORANGE << TOP_LEFT;
+    for (int x = 0; x < mapWidth - 2; x++) { // mapWidth - 2 yatay çizgi
         std::cout << HORIZONTAL;
     }
     std::cout << TOP_RIGHT << RESET << "\n";
@@ -243,16 +249,16 @@ void printHeader() {
 
     // Başlık satırı
     printSpaces(boxPadding);
-    std::cout << ORANGE << BG_BLACK << VERTICAL << RESET;
-    printSpaces(titlePadding);
+    std::cout << ORANGE << VERTICAL << RESET;
+    printSpaces(leftPaddingInsideBox);
     std::cout << title;
-    printSpaces(rightPadding);
-    std::cout << ORANGE << BG_BLACK << VERTICAL << RESET << "\n";
+    printSpaces(rightPaddingInsideBox);
+    std::cout << ORANGE << VERTICAL << RESET << "\n";
 
     // Kutunun alt çizgisi
     printSpaces(boxPadding);
-    std::cout << ORANGE << BG_BLACK << BOTTOM_LEFT;
-    for (int x = 0; x < mapWidth - 2; x++) {
+    std::cout << ORANGE << BOTTOM_LEFT;
+    for (int x = 0; x < mapWidth - 2; x++) { // mapWidth - 2 yatay çizgi
         std::cout << HORIZONTAL;
     }
     std::cout << BOTTOM_RIGHT << RESET << "\n\n";
@@ -261,15 +267,16 @@ void printHeader() {
 
 void drawTerrain() {
     system("cls");  // Windows için clear komutu
+    printHeader(); 
     
     int screenWidth = getTerminalWidth();
-    int mapWidth = (width * 2);
+    int mapWidth = (width * 2) + 2; // Arena genişliği + kenarlar
     int padding = (screenWidth - mapWidth) / 2;
 
     // Üst kenar
     printSpaces(padding);
     std::cout << ORANGE << TOP_LEFT;
-    for (int x = 0; x < width; x++) {
+    for (int x = 0; x < width; x++) { // width * 2 yatay çizgi
         std::cout << HORIZONTAL << HORIZONTAL;
     }
     std::cout << TOP_RIGHT << RESET << "\n";
@@ -314,7 +321,7 @@ void drawTerrain() {
     // Alt kenar
     printSpaces(padding);
     std::cout << ORANGE << BOTTOM_LEFT;
-    for (int x = 0; x < width; x++) {
+    for (int x = 0; x < width; x++) { // width * 2 yatay çizgi
         std::cout << HORIZONTAL << HORIZONTAL;
     }
     std::cout << BOTTOM_RIGHT << RESET << "\n";
