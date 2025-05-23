@@ -51,30 +51,46 @@ class Arena {
 
     // Robot bilgilerini yazdır
     void printRobotInfo(std::shared_ptr<Movable> robot) {
+        const int CELL_WIDTH = 20; // Her hücre için sabit genişlik
+        std::string output_str;
+
         if (robot) {
+            // Sadece durum yazısına renk kodlarını uygula
             std::string status = (robot->getStatus() == Movable::Status::ALIVE) ? 
                 (GREEN + std::string(" AKTIF") + RESET) : 
                 (RED + std::string(" PASIF") + RESET);
+                
             std::string info = robot->getNickName() + " : " + std::to_string(robot->getTotalPoints());
             
-            // Nickname uzunluğuna göre sabit boşluk ekle
-            int nicknameLength = robot->getNickName().length();
-            int requiredPadding = 3; // Sabit boşluk
-            if (nicknameLength == 1) requiredPadding = 4; // P1, S1 gibi tek karakterli nickname'ler için 4 boşluk
+            // Renk kodları string uzunluğunu etkiler, bu yüzden hesaplamaya dahil etmiyoruz
+            // Sadece info kısmının gerçek uzunluğunu alıyoruz
+            int info_len = robot->getNickName().length() + 3 + std::to_string(robot->getTotalPoints()).length(); // Nickname + " : " + Points
             
-            for(int i = 0; i < requiredPadding; ++i) {
-                std::cout << " ";
-            }
+            // Status kısmının gerçek uzunluğu (renk kodları hariç)
+            int status_len = (robot->getStatus() == Movable::Status::ALIVE) ? 
+                            std::string(" AKTIF").length() : 
+                            std::string(" PASIF").length();
+                            
+            int total_len = info_len + status_len; // Toplam gerçek uzunluk
 
-            // Bilgiyi ve durumu belirli bir genişlikte yazdır
-            std::cout << std::left << std::setw(17) << (info + status);
-        } else {
-            // Boş satırlar için aynı genişlikte boşluk yazdır
-            for(int i = 0; i < 4; ++i) {
-                 std::cout << " ";
+            // Bilgi ve renkli durumu birleştir
+            std::string content = info + status;
+            
+            // Kalan boşluğu ekle
+            int padding_needed = CELL_WIDTH - total_len;
+            if (padding_needed > 0) {
+                content += std::string(padding_needed, ' ');
             }
-            std::cout << std::setw(17) << " ";
+            
+            output_str = content;
+            
+        } else {
+            // Robot yoksa boş hücre oluştur (arka plansız)
+            output_str = std::string(CELL_WIDTH, ' ');
         }
+        
+        // Sabit genişlikte yazdır
+        std::cout << output_str;
     }
 
     // Verilen sembol karakterine göre renklendirilmiş bir string döner
@@ -217,19 +233,30 @@ void printHeader() {
     int rightPadding = (mapWidth - 2 - title.length()) - titlePadding;
 
     // Kutunun üst çizgisi
-    std::string ust = std::string(boxPadding, ' ') + ORANGE + BG_BLACK + "+" + std::string(mapWidth - 2, '-') + "+" + RESET;
-    for (char c : ust) { std::cout << c << std::flush; std::this_thread::sleep_for(std::chrono::milliseconds(2)); }
-    std::cout << "\n";
+    printSpaces(boxPadding);
+    std::cout << ORANGE << BG_BLACK << TOP_LEFT;
+    for (int x = 0; x < mapWidth - 2; x++) {
+        std::cout << HORIZONTAL;
+    }
+    std::cout << TOP_RIGHT << RESET << "\n";
+    
 
     // Başlık satırı
-    std::string satir = std::string(boxPadding, ' ') + ORANGE + BG_BLACK + "|" + RESET + std::string(titlePadding, ' ') + title + std::string(rightPadding, ' ') + ORANGE + BG_BLACK + "|" + RESET;
-    for (char c : satir) { std::cout << c << std::flush; std::this_thread::sleep_for(std::chrono::milliseconds(2)); }
-    std::cout << "\n";
+    printSpaces(boxPadding);
+    std::cout << ORANGE << BG_BLACK << VERTICAL << RESET;
+    printSpaces(titlePadding);
+    std::cout << title;
+    printSpaces(rightPadding);
+    std::cout << ORANGE << BG_BLACK << VERTICAL << RESET << "\n";
 
     // Kutunun alt çizgisi
-    std::string alt = std::string(boxPadding, ' ') + ORANGE + BG_BLACK + "+" + std::string(mapWidth - 2, '-') + "+" + RESET;
-    for (char c : alt) { std::cout << c << std::flush; std::this_thread::sleep_for(std::chrono::milliseconds(2)); }
-    std::cout << "\n\n";
+    printSpaces(boxPadding);
+    std::cout << ORANGE << BG_BLACK << BOTTOM_LEFT;
+    for (int x = 0; x < mapWidth - 2; x++) {
+        std::cout << HORIZONTAL;
+    }
+    std::cout << BOTTOM_RIGHT << RESET << "\n\n";
+
 }
 
 void drawTerrain() {
@@ -316,10 +343,10 @@ void showScoreTable() {
 
     printSpaces(padding);
     std::cout << std::left 
-              << std::setw(20) << (GREEN + std::string("      OYUNCULAR") + RESET)
-              << std::setw(20) << (RED + std::string("          NISANCILAR") + RESET)
-              << std::setw(20) << (CYAN + std::string("        DONDURUCULAR") + RESET)
-              << std::setw(20) << (YELLOW + std::string("       ZIPLAYANLAR") + RESET) << "\n";
+              << std::setw(20) << (GREEN + std::string("  OYUNCULAR     ") + RESET)
+              << std::setw(20) << (RED + std::string("         NISANCILAR") + RESET)
+              << std::setw(20) << (CYAN + std::string("            DONDURUCULAR") + RESET)
+              << std::setw(20) << (YELLOW + std::string("         ZIPLAYANLAR") + RESET) << "\n";
     std::this_thread::sleep_for(std::chrono::milliseconds(30));
     printSpaces(padding);
     std::cout << ORANGE << std::string(80, '-') << RESET << "\n";
@@ -333,7 +360,7 @@ void showScoreTable() {
         printRobotInfo(i < shooters.size() ? shooters[i] : nullptr);
         std::cout << "   ";
         printRobotInfo(i < freezers.size() ? freezers[i] : nullptr);
-        std::cout << "   ";
+        std::cout << " ";
         printRobotInfo(i < jumpers.size() ? jumpers[i] : nullptr);
         std::cout << "\n";
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
