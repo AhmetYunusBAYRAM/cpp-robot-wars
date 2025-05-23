@@ -4,10 +4,10 @@
 #include "Movable.cpp"
 #include "../include/config.h"
 
-// Standart C++ kütüphaneleri
-#include <iostream>   // Giriş/çıkış işlemleri için
-#include <cstdlib>    // rand() fonksiyonu için
-#include <string>     // String işlemleri için
+// Standart C++ kutuphaneleri
+#include <iostream>   // Giris/cikis islemleri icin
+#include <cstdlib>    // rand() fonksiyonu icin
+#include <string>     // String islemleri icin
 #include <ctime>
 #include <cmath>
 
@@ -30,7 +30,7 @@ public:
     Player(Point p, int index) : Movable(p, 1, "P" + std::to_string(index + 1)) {}
     
     Point move() override {
-        std::cout << "Oyuncu " << nickName.substr(1) << " için yön seçin (0:Kuzey, 1:Doğu, 2:Güney, 3:Batı): ";
+        std::cout << "Oyuncu " << nickName.substr(1) << " icin yon secin (0:Kuzey, 1:Dogu, 2:Guney, 3:Bati): ";
         int dir; std::cin >> dir;
         Point newLoc = location;
         switch(dir) {

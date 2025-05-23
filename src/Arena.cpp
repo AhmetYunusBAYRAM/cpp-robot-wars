@@ -10,6 +10,18 @@
 #include <vector>
 #include <memory>
 #include <iomanip>
+#include <algorithm> // std::max için
+
+// Renk kodları
+#define RESET   "\033[0m"
+#define RED     "\033[31m"
+#define GREEN   "\033[32m"
+#define YELLOW  "\033[33m"
+#define BLUE    "\033[34m"
+#define MAGENTA "\033[35m"
+#define CYAN    "\033[36m"
+#define ORANGE  "\033[38;5;208m"
+#define BG_BLACK "\033[40m"
 
 // Basit karakterler
 #define TOP_LEFT     "+"
@@ -40,13 +52,28 @@ class Arena {
     // Robot bilgilerini yazdır
     void printRobotInfo(std::shared_ptr<Movable> robot) {
         if (robot) {
-            std::string status = (robot->getStatus() == Movable::Status::ALIVE) ? " AKTİF" : "PASİF";
-            std::cout << "   ";  // 3 boşluk
+            std::string status = (robot->getStatus() == Movable::Status::ALIVE) ? 
+                (GREEN + std::string(" AKTIF") + RESET) : 
+                (RED + std::string(" PASIF") + RESET);
             std::string info = robot->getNickName() + " : " + std::to_string(robot->getTotalPoints());
-            if (robot->getTotalPoints() >= -9 && robot->getTotalPoints() < 10) info += " ";
+            
+            // Nickname uzunluğuna göre sabit boşluk ekle
+            int nicknameLength = robot->getNickName().length();
+            int requiredPadding = 3; // Sabit boşluk
+            if (nicknameLength == 1) requiredPadding = 4; // P1, S1 gibi tek karakterli nickname'ler için 4 boşluk
+            
+            for(int i = 0; i < requiredPadding; ++i) {
+                std::cout << " ";
+            }
+
+            // Bilgiyi ve durumu belirli bir genişlikte yazdır
             std::cout << std::left << std::setw(17) << (info + status);
         } else {
-            std::cout << "   " << std::setw(16) << " ";
+            // Boş satırlar için aynı genişlikte boşluk yazdır
+            for(int i = 0; i < 4; ++i) {
+                 std::cout << " ";
+            }
+            std::cout << std::setw(17) << " ";
         }
     }
 
@@ -55,13 +82,28 @@ class Arena {
         if (symbol.empty()) {
             return symbol;
         }
-        return symbol;
+        
+        // İlk karaktere göre arka plan rengi belirle
+        char firstChar = symbol[0];
+        std::string bgColor;
+        
+        if (firstChar == 'P') {
+            bgColor = std::string("\033[42m");  // Yeşil arka plan
+        } else if (firstChar == 'S') {
+            bgColor = std::string("\033[41m");  // Kırmızı arka plan
+        } else if (firstChar == 'F') {
+            bgColor = std::string("\033[46m");  // Cyan arka plan
+        } else if (firstChar == 'J') {
+            bgColor = std::string("\033[43m");  // Sarı arka plan
+        }
+        
+        return bgColor + symbol + std::string(RESET);
     }
 
     public:
     Arena(int arenaWidth, int arenaHeight) {
-        width = (arenaWidth < 10) ? 10 : arenaWidth;
-        height = (arenaHeight < 10) ? 10 : arenaHeight;
+        width = arenaWidth;  
+        height = arenaHeight;
     }
 
     
@@ -71,22 +113,22 @@ class Arena {
         int np, ns, nf, nj;
 
         // Kullanıcıdan robot türü sayıları alınır
-        std::cout << "Oyuncu sayısı ...........(1-9): ";
+        std::cout << "OYUNCU SAYISI ...........(1-9): ";
         std::cin >> np;
         if (np < 1) np = 1;
         if (np > 9) np = 9;
 
-        std::cout << "Nişancı sayısı ..........(0-9): ";
+        std::cout << "NISANCI SAYISI ..........(0-9): ";
         std::cin >> ns;
         if (ns < 0) ns = 0;
         if (ns > 9) ns = 9;
 
-        std::cout << "Dondurucu sayısı ........(0-9): ";
+        std::cout << "DONDURUCU SAYISI ........(0-9): ";
         std::cin >> nf;
         if (nf < 0) nf = 0;
         if (nf > 9) nf = 9;
 
-        std::cout << "Zıplayıcı sayısı ........(0-9): ";
+        std::cout << "ZIPLAYICI SAYISI ........(0-9): ";
         std::cin >> nj;
         if (nj < 0) nj = 0;
         if (nj > 9) nj = 9;
@@ -168,8 +210,8 @@ void runGame() {
 
 void printHeader() {
     int screenWidth = getTerminalWidth();
-    int mapWidth = (width * 2) + 2;
-    std::string title = "ROBOT SAVAŞLARI";
+    int mapWidth = (width * 2);
+    std::string title = "ROBOT SAVASLARI";
     int boxPadding = (screenWidth - mapWidth) / 2;
     int titlePadding = (mapWidth - 2 - title.length()) / 2;
     int rightPadding = (mapWidth - 2 - title.length()) - titlePadding;
@@ -180,7 +222,7 @@ void printHeader() {
     std::cout << "\n";
 
     // Başlık satırı
-    std::string satir = std::string(boxPadding, ' ') + ORANGE + BG_BLACK + "|" + RESET + std::string(titlePadding, ' ') + title + std::string(rightPadding, ' ') + ORANGE + BG_BLACK + " |" + RESET;
+    std::string satir = std::string(boxPadding, ' ') + ORANGE + BG_BLACK + "|" + RESET + std::string(titlePadding, ' ') + title + std::string(rightPadding, ' ') + ORANGE + BG_BLACK + "|" + RESET;
     for (char c : satir) { std::cout << c << std::flush; std::this_thread::sleep_for(std::chrono::milliseconds(2)); }
     std::cout << "\n";
 
@@ -192,25 +234,23 @@ void printHeader() {
 
 void drawTerrain() {
     system("cls");  // Windows için clear komutu
-    printHeader();
     
     int screenWidth = getTerminalWidth();
-    int mapWidth = (width * 2) + 2;
+    int mapWidth = (width * 2);
     int padding = (screenWidth - mapWidth) / 2;
 
     // Üst kenar
     printSpaces(padding);
-    std::cout << ORANGE << BG_BLACK << TOP_LEFT;
+    std::cout << ORANGE << TOP_LEFT;
     for (int x = 0; x < width; x++) {
         std::cout << HORIZONTAL << HORIZONTAL;
     }
     std::cout << TOP_RIGHT << RESET << "\n";
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
     // Oyun alanı
     for (int y = 0; y < height; y++) {
         printSpaces(padding);
-        std::cout << ORANGE << BG_BLACK << VERTICAL << RESET;
+        std::cout << ORANGE << VERTICAL << RESET;
         for (int x = 0; x < width; x++) {
             bool yazildi = false;
             for (auto& r : robots) {
@@ -218,7 +258,21 @@ void drawTerrain() {
                     r->getLocation().getX() == x && 
                     r->getLocation().getY() == y) {
                     std::string sym = r->getNickName();
+                    // Sembolü ortala
+                    int remainingSpace = 2 - sym.length();
+                    int leftSpace = remainingSpace / 2;
+                    int rightSpace = remainingSpace - leftSpace;
+                    
+                    // Sol boşluk
+                    for(int i = 0; i < leftSpace; i++) {
+                        std::cout << " ";
+                    }
+                    // Sembol
                     std::cout << getColoredSymbol(sym);
+                    // Sağ boşluk
+                    for(int i = 0; i < rightSpace; i++) {
+                        std::cout << " ";
+                    }
                     yazildi = true;
                     break;
                 }
@@ -227,53 +281,59 @@ void drawTerrain() {
                 std::cout << EMPTY_SPACE << " "; 
             }
         }
-        std::cout << ORANGE << BG_BLACK << VERTICAL << RESET << "\n"; 
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        std::cout << ORANGE << VERTICAL << RESET << "\n";
     }
 
     // Alt kenar
     printSpaces(padding);
-    std::cout << ORANGE << BG_BLACK << BOTTOM_LEFT;
+    std::cout << ORANGE << BOTTOM_LEFT;
     for (int x = 0; x < width; x++) {
         std::cout << HORIZONTAL << HORIZONTAL;
     }
     std::cout << BOTTOM_RIGHT << RESET << "\n";
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
 }
 
 void showScoreTable() {
     int screenWidth = getTerminalWidth();
     int tableWidth = 83;
-    int padding = (screenWidth - tableWidth) / 2 + 2;
+    int padding = (screenWidth - tableWidth) / 2;
 
     std::vector<std::shared_ptr<Movable>> players, shooters, freezers, jumpers;
     for (auto& r : robots) {
-        switch(r->getNickName()[0]) {
-            case 'P': players.push_back(r); break;
-            case 'S': shooters.push_back(r); break;
-            case 'F': freezers.push_back(r); break;
-            case 'J': jumpers.push_back(r); break;
+        if (dynamic_cast<Player*>(r.get())) {
+            players.push_back(r);
+        } else if (dynamic_cast<Shooter*>(r.get())) {
+            shooters.push_back(r);
+        } else if (dynamic_cast<Freezer*>(r.get())) {
+            freezers.push_back(r);
+        } else if (dynamic_cast<Jumper*>(r.get())) {
+            jumpers.push_back(r);
         }
     }
 
+    // Her kategori için 9 sütun oluştur
+    const int MAX_COLUMNS = 9;
+
     printSpaces(padding);
     std::cout << std::left 
-              << std::setw(20) << (GREEN + std::string("      Oyuncular") + RESET)
-              << std::setw(20) << (RED + std::string("          Nişancılar") + RESET)
-              << std::setw(20) << (CYAN + std::string("        Dondurucular") + RESET)
-              << std::setw(20) << (YELLOW + std::string("       Zıplayanlar") + RESET) << "\n";
+              << std::setw(20) << (GREEN + std::string("      OYUNCULAR") + RESET)
+              << std::setw(20) << (RED + std::string("          NISANCILAR") + RESET)
+              << std::setw(20) << (CYAN + std::string("        DONDURUCULAR") + RESET)
+              << std::setw(20) << (YELLOW + std::string("       ZIPLAYANLAR") + RESET) << "\n";
     std::this_thread::sleep_for(std::chrono::milliseconds(30));
     printSpaces(padding);
     std::cout << ORANGE << std::string(80, '-') << RESET << "\n";
     std::this_thread::sleep_for(std::chrono::milliseconds(30));
 
-    int maxSize = std::max({players.size(), shooters.size(), freezers.size(), jumpers.size()});
-
-    for (int i = 0; i < maxSize; i++) {
-        printSpaces(padding);
+    // Her kategori için 9 satır oluştur
+    for (int i = 0; i < MAX_COLUMNS; i++) {
+        printSpaces(padding + 2);
         printRobotInfo(i < players.size() ? players[i] : nullptr);
+        std::cout << "   ";
         printRobotInfo(i < shooters.size() ? shooters[i] : nullptr);
+        std::cout << "   ";
         printRobotInfo(i < freezers.size() ? freezers[i] : nullptr);
+        std::cout << "   ";
         printRobotInfo(i < jumpers.size() ? jumpers[i] : nullptr);
         std::cout << "\n";
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
@@ -282,7 +342,7 @@ void showScoreTable() {
 }
 
 void showTurnAnimation(int turn) {
-    std::string mesaj = "Yeni Tur Başlıyor!";
+    std::string mesaj = "YENI TUR BASLIYOR!";
     int screenWidth = getTerminalWidth();
     int padding = (screenWidth - mesaj.length()) / 2;
     system("cls");  // Windows için clear komutu
