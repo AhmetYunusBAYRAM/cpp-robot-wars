@@ -12,26 +12,41 @@
 #include <windows.h>
 #include <iomanip>
 
-// ANSI renk kodları
-#define RESET   "\033[0m"
-#define RED     "\033[31m"
-#define GREEN   "\033[32m"
-#define YELLOW  "\033[33m"
-#define CYAN    "\033[36m"
-#define BLUE    "\033[34m"
-#define MAGENTA "\033[35m"
-#define BG_BLACK "\033[40m"
-#define BG_WHITE "\033[47m"
-#define ORANGE  "\033[38;5;208m"
+// Windows için renk kodları
+#define RESET   ""
+#define RED     ""
+#define GREEN   ""
+#define YELLOW  ""
+#define CYAN    ""
+#define BLUE    ""
+#define MAGENTA ""
+#define BG_BLACK ""
+#define BG_WHITE ""
+#define ORANGE  ""
 
-// Özel karakterler
-#define TOP_LEFT     "╔"
-#define TOP_RIGHT    "╗"
-#define BOTTOM_LEFT  "╚"
-#define BOTTOM_RIGHT "╝"
-#define HORIZONTAL   "═"
-#define VERTICAL     "║"
-#define EMPTY_SPACE  "·"
+// Windows için karakterler
+#define TOP_LEFT     "+"
+#define TOP_RIGHT    "+"
+#define BOTTOM_LEFT  "+"
+#define BOTTOM_RIGHT "+"
+#define HORIZONTAL   "-"
+#define VERTICAL     "|"
+#define EMPTY_SPACE  "."
+
+// Windows için renk fonksiyonları
+void setColor(int color) {
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
+}
+
+// Renk sabitleri
+const int COLOR_RED = 12;
+const int COLOR_GREEN = 10;
+const int COLOR_YELLOW = 14;
+const int COLOR_CYAN = 11;
+const int COLOR_BLUE = 9;
+const int COLOR_MAGENTA = 13;
+const int COLOR_WHITE = 15;
+const int COLOR_BLACK = 0;
 
 class Arena {
     private : 
@@ -40,9 +55,9 @@ class Arena {
 
     // Ekran genişliğini al
     int getTerminalWidth() {
-        CONSOLE_SCREEN_BUFFER_INFO csbi;
-        GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-        return csbi.srWindow.Right - csbi.srWindow.Left + 1;
+        struct winsize w;
+        ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+        return w.ws_col;
     }
 
     // Belirtilen sayıda boşluk yazdır
@@ -56,11 +71,13 @@ class Arena {
     void printRobotInfo(std::shared_ptr<Movable> robot) {
         if (robot) {
             std::string status = (robot->getStatus() == Movable::Status::ALIVE) ? " AKTİF" : "PASİF";
-            std::string bgColor = (robot->getStatus() == Movable::Status::ALIVE) ? "\033[42m" : "\033[41m";
+            int bgColor = (robot->getStatus() == Movable::Status::ALIVE) ? COLOR_GREEN : COLOR_RED;
             std::cout << "   ";  // 3 boşluk
             std::string info = robot->getNickName() + " : " + std::to_string(robot->getTotalPoints());
             if (robot->getTotalPoints() >= -9 && robot->getTotalPoints() < 10) info += " ";
-            std::cout << bgColor << std::left << std::setw(17) << (info + status) << RESET;
+            setColor(bgColor);
+            std::cout << std::left << std::setw(17) << (info + status);
+            setColor(COLOR_WHITE);
         } else {
             // Boş kutuda sadece boşluk bırak, arka plan rengi verme
             std::cout << "   " << std::setw(16) << " ";
@@ -73,22 +90,21 @@ class Arena {
             return symbol;
         }
 
-        // Sembolün numarasını al (örn: "P1" -> "1")
         std::string number = symbol.substr(1);
-
-        // Arka plan renk kodları
-        const std::string BG_GREEN = "\033[30;42m";   // Siyah yazı, yeşil arka plan
-        const std::string BG_RED = "\033[30;41m";     // Siyah yazı, kırmızı arka plan
-        const std::string BG_CYAN = "\033[30;46m";    // Siyah yazı, camgöbeği arka plan
-        const std::string BG_YELLOW = "\033[30;43m";  // Siyah yazı, sarı arka plan
+        int color;
 
         switch(symbol[0]) {
-            case 'P': return BG_GREEN + "P" + number + RESET;   // Oyuncu
-            case 'S': return BG_RED + "S" + number + RESET;     // Nişancı
-            case 'F': return BG_CYAN + "F" + number + RESET;    // Dondurucu
-            case 'J': return BG_YELLOW + "J" + number + RESET;  // Zıplayan
+            case 'P': color = COLOR_GREEN; break;   // Oyuncu
+            case 'S': color = COLOR_RED; break;     // Nişancı
+            case 'F': color = COLOR_CYAN; break;    // Dondurucu
+            case 'J': color = COLOR_YELLOW; break;  // Zıplayan
             default: return symbol;
         }
+
+        setColor(color);
+        std::string result = symbol[0] + number;
+        setColor(COLOR_WHITE);
+        return result;
     }
 
     public:
@@ -300,11 +316,7 @@ void showScoreTable() {
     std::cout << ORANGE << std::string(80, '-') << RESET << "\n";
     std::this_thread::sleep_for(std::chrono::milliseconds(30));
 
-    // std::max yerine manuel karşılaştırma kullanıyoruz
-    int maxSize = players.size();
-    if (shooters.size() > maxSize) maxSize = shooters.size();
-    if (freezers.size() > maxSize) maxSize = freezers.size();
-    if (jumpers.size() > maxSize) maxSize = jumpers.size();
+    int maxSize = std::max({players.size(), shooters.size(), freezers.size(), jumpers.size()});
 
     for (int i = 0; i < maxSize; i++) {
         printSpaces(padding);

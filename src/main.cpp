@@ -6,12 +6,15 @@
 #include <windows.h>
 
 int main() {
-    // Windows'ta ANSI renk kodlarını etkinleştir
+    // Windows konsol ayarları
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD dwMode = 0;
-    GetConsoleMode(hOut, &dwMode);
-    SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-
+    CONSOLE_SCREEN_BUFFER_INFO scrBufferInfo;
+    GetConsoleScreenBufferInfo(hOut, &scrBufferInfo);
+    
+    // Konsol boyutunu ayarla
+    SMALL_RECT winSize = {0, 0, 100, 30};
+    SetConsoleWindowInfo(hOut, TRUE, &winSize);
+    
     // Rastgele sayı üretecini başlat
     srand(time(nullptr));
     
