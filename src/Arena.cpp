@@ -300,7 +300,11 @@ void showScoreTable() {
     std::cout << ORANGE << std::string(80, '-') << RESET << "\n";
     std::this_thread::sleep_for(std::chrono::milliseconds(30));
 
-    int maxSize = std::max({players.size(), shooters.size(), freezers.size(), jumpers.size()});
+    // std::max yerine manuel karşılaştırma kullanıyoruz
+    int maxSize = players.size();
+    if (shooters.size() > maxSize) maxSize = shooters.size();
+    if (freezers.size() > maxSize) maxSize = freezers.size();
+    if (jumpers.size() > maxSize) maxSize = jumpers.size();
 
     for (int i = 0; i < maxSize; i++) {
         printSpaces(padding);
